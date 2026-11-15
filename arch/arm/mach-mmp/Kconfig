@@ -1,12 +1,45 @@
 if ARCH_MMP
 
+choice
+	prompt "Marvell MMP board select"
+	default TARGET_COREPRIMEVELTE
+
 config TARGET_COREPRIMEVELTE
-	bool "Support coreprimevelte"
+	bool "Samsung Galaxy Core Prime VE LTE (PXA1908)"
+	select ARM64
 	select LINUX_KERNEL_IMAGE_HEADER
+	select SAVE_PREV_BL_FDT_ADDR
+	select SAVE_PREV_BL_INITRAMFS_START_ADDR
+
+config TARGET_GOYAWIFI
+	bool "Samsung Galaxy Tab 3 Lite 7.0 Wi-Fi (SM-T110, PXA986)"
+	select SOC_PXA988
+	help
+	  Samsung Galaxy Tab 3 Lite 7.0 Wi-Fi (SM-T110, codename goyawifi),
+	  built around the Marvell PXA986 (PXA988 family, dual Cortex-A9).
+	  U-Boot is chain-loaded by the Samsung S-Boot bootloader from the
+	  KERNEL partition, in place of a Linux zImage.
+
+endchoice
+
+config SOC_PXA988
+	bool
+	select CPU_V7A
+	select ENABLE_ARM_SOC_BOOT0_HOOK
+	select SYS_L2CACHE_OFF
+	select TIMER
+	select MMP_TIMER
+	help
+	  Marvell PXA988 / PXA986 SoC: dual ARM Cortex-A9 MPCore with a
+	  PL310 L2 cache, GIC, MMP APB timers, PXA UARTs and PXAv3 SDHCI.
+
+config SYS_SOC
+	default "mmp" if SOC_PXA988
 
 config LNX_KRNL_IMG_TEXT_OFFSET_BASE
 	default TEXT_BASE
 
 source "board/samsung/coreprimevelte/Kconfig"
+source "board/samsung/goyawifi/Kconfig"
 
 endif

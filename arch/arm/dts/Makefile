@@ -1155,6 +1155,7 @@ dtb-$(CONFIG_TARGET_CORSTONE1000) += corstone1000-mps3.dtb \
 				corstone1000-fvp.dtb
 
 dtb-$(CONFIG_TARGET_COREPRIMEVELTE) += pxa1908-samsung-coreprimevelte.dtb
+dtb-$(CONFIG_TARGET_GOYAWIFI) += pxa986-samsung-goyawifi.dtb
 
 include $(srctree)/scripts/Makefile.dts
 

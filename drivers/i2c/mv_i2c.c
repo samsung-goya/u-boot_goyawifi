@@ -534,6 +534,7 @@ static const struct dm_i2c_ops mv_i2c_ops = {
 
 static const struct udevice_id mv_i2c_ids[] = {
 	{ .compatible = "marvell,armada-3700-i2c" },
+	{ .compatible = "mrvl,mmp-twsi" },
 	{ }
 };
 

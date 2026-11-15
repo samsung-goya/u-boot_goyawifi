@@ -1,0 +1,12 @@
+if TARGET_GOYAWIFI
+
+config SYS_BOARD
+	default "goyawifi"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "pxa988"
+
+endif

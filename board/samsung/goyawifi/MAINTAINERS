@@ -1,0 +1,14 @@
+SAMSUNG GALAXY TAB 3 LITE 7.0 WI-FI (SM-T110, GOYAWIFI)
+M:	goyawifi port maintainers <goyawifi@localhost>
+S:	Maintained
+F:	arch/arm/dts/pxa988.dtsi
+F:	arch/arm/dts/pxa986-samsung-goyawifi.dts
+F:	arch/arm/mach-mmp/pxa988.c
+F:	arch/arm/mach-mmp/lowlevel_pxa988.S
+F:	arch/arm/mach-mmp/include/mach/
+F:	board/samsung/goyawifi/
+F:	configs/goyawifi_defconfig
+F:	doc/board/samsung/goyawifi.rst
+F:	include/configs/pxa988.h
+F:	drivers/gpio/mmp_gpio.c
+F:	drivers/timer/mmp_timer.c

@@ -545,6 +545,13 @@ config SIFIVE_GPIO
 	  Device model driver for GPIO controller present in SiFive FU540 SoC. This
 	  driver enables GPIO interface on HiFive Unleashed A00 board.
 
+config MMP_GPIO
+	bool "Marvell MMP GPIO driver"
+	depends on DM_GPIO
+	help
+	  Support for the GPIO controller found on Marvell MMP SoCs such as
+	  PXA910, PXA988/PXA986 and PXA1908.
+
 config MVEBU_GPIO
 	bool "Marvell MVEBU GPIO driver"
 	depends on DM_GPIO && (ARCH_MVEBU || ARCH_KIRKWOOD)

@@ -1,0 +1,201 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Samsung Galaxy Tab 3 Lite 7.0 Wi-Fi (SM-T110 / goyawifi), U-Boot DT
+ *
+ * SoC: Marvell PXA986 (PXA988 family, dual Cortex-A9 r3p0)
+ * RAM: 1 GiB LPDDR2 @ 0x00000000
+ *
+ * Hardware description follows the goyawifi Linux 4.19 port
+ * (arch/arm/boot/dts/pxa986-samsung-goyawifi.dts). When booting Linux,
+ * pass the kernel's own DTB; this one only describes what U-Boot drives.
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include "pxa988.dtsi"
+
+/ {
+	model = "Samsung Galaxy Tab 3 Lite 7.0 (SM-T110)";
+	compatible = "samsung,goyawifi", "marvell,pxa986", "marvell,pxa988";
+
+	aliases {
+		mmc0 = &sdh3;	/* eMMC */
+		mmc1 = &sdh1;	/* microSD */
+	};
+
+	chosen {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		stdout-path = "serial0:115200n8";
+		tick-timer = &timer0;
+
+		/* Splash left scanning out by S-Boot (LCD + DSI + VX5B3D) */
+		framebuffer0: framebuffer@17000000 {
+			compatible = "simple-framebuffer";
+			memory-region = <&fb_mem>;
+			width = <1024>;
+			height = <600>;
+			stride = <(1024 * 4)>;
+			format = "a8r8g8b8";
+			bootph-all;
+		};
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x00000000 0x40000000>;
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		/* Marvell OBM / boot ROM scratch */
+		obm@0 {
+			reg = <0x00000000 0x00100000>;
+			no-map;
+		};
+
+		/* CP / MSA carveout + OBM parameter page, HW protected by S-Boot */
+		cp@6000000 {
+			reg = <0x06000000 0x02100000>;
+			no-map;
+		};
+
+		/* ramoops / last_kmsg, keep it intact across U-Boot */
+		ramoops@8100000 {
+			reg = <0x08100000 0x00080000>;
+			no-map;
+		};
+
+		fb_mem: framebuffer@17000000 {
+			reg = <0x17000000 (1024 * 600 * 4)>;
+			no-map;
+		};
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio_keys_pins &home_key_pins>;
+
+		volume-up {
+			label = "Volume Up";
+			linux,code = <KEY_UP>;
+			gpios = <&gpio 1 GPIO_ACTIVE_LOW>;
+		};
+
+		volume-down {
+			label = "Volume Down";
+			linux,code = <KEY_DOWN>;
+			gpios = <&gpio 2 GPIO_ACTIVE_LOW>;
+		};
+
+		home {
+			label = "Home";
+			linux,code = <KEY_ENTER>;
+			gpios = <&gpio 13 GPIO_ACTIVE_LOW>;
+		};
+	};
+};
+
+&pmx {
+	uart1_pins: uart1-pins {
+		pinctrl-single,pins = <
+			GPIO47 AF6	/* UART1_RXD */
+			GPIO48 AF6	/* UART1_TXD */
+		>;
+	};
+
+	sdh1_pins: sdh1-pins {
+		pinctrl-single,pins = <
+			MMC1_DAT0 AF0
+			MMC1_DAT1 AF0
+			MMC1_DAT2 AF0
+			MMC1_DAT3 AF0
+			MMC1_CMD  AF0
+			MMC1_CLK  AF0
+			GPIO11    AF0	/* SD_DETECT */
+		>;
+	};
+
+	sdh3_emmc_pins: sdh3-emmc-pins {
+		pinctrl-single,pins = <
+			DF_IO0 AF1	/* MMC3_DAT0 */
+			DF_IO1 AF1	/* MMC3_DAT1 */
+			DF_IO2 AF1	/* MMC3_DAT2 */
+			DF_IO3 AF1	/* MMC3_DAT3 */
+			DF_IO4 AF1	/* MMC3_DAT4 */
+			DF_IO5 AF1	/* MMC3_DAT5 */
+			DF_IO6 AF1	/* MMC3_DAT6 */
+			DF_IO7 AF1	/* MMC3_DAT7 */
+			DF_CLE_SM_OEN AF1 /* MMC3_CMD */
+			SM_SCLK AF1	/* MMC3_CLK */
+		>;
+	};
+
+	gpio_keys_pins: gpio-keys-pins {
+		pinctrl-single,pins = <
+			GPIO1 AF0	/* KEY_VOLUMEUP */
+			GPIO2 AF0	/* KEY_VOLUMEDOWN */
+		>;
+	};
+
+	home_key_pins: home-key-pins {
+		pinctrl-single,pins = <
+			GPIO13 AF0	/* KEY_HOME */
+		>;
+	};
+};
+
+/* Debug UART: UART1 -> micro-USB via the RT8973A MUIC (619k JIG cable) */
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart1_pins>;
+	status = "okay";
+	bootph-all;
+};
+
+/* eMMC (SanDisk 8 GB) */
+&sdh3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdh3_emmc_pins>;
+	bus-width = <8>;
+	non-removable;
+	no-sd;
+	no-sdio;
+	no-1-8-v;
+	max-frequency = <26000000>;
+	status = "okay";
+};
+
+/* microSD slot */
+&sdh1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdh1_pins>;
+	bus-width = <4>;
+	cd-gpios = <&gpio 11 GPIO_ACTIVE_LOW>;
+	no-1-8-v;
+	cap-sd-highspeed;
+	max-frequency = <50000000>;
+	status = "okay";
+};
+
+/* Dedicated PMIC bus: Marvell 88PM822 (+ 88PM805 codec) */
+&twsi2 {
+	clock-frequency = <100000>;
+	status = "okay";
+};
+
+/* USB device mode (fastboot / UMS); the RT8973A MUIC auto-routes D+/D- */
+&usb {
+	status = "okay";
+};
+
+&usb_phy {
+	status = "okay";
+};

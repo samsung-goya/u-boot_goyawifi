@@ -885,12 +885,9 @@ config ARCH_MEDIATEK
 
 config ARCH_MMP
 	bool "Marvell MMP"
-	select ARM64
 	select DM
 	select DM_SERIAL
 	select OF_CONTROL
-	select SAVE_PREV_BL_FDT_ADDR
-	select SAVE_PREV_BL_INITRAMFS_START_ADDR
 	imply OF_UPSTREAM
 
 config ARCH_LPC32XX

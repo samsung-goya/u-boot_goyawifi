@@ -1,0 +1,230 @@
+// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+/*
+ * Marvell PXA988 / PXA986 (dual Cortex-A9) SoC
+ *
+ * Derived from the goyawifi Linux 4.19 port (arch/arm/boot/dts/pxa988.dtsi).
+ * Clock bindings are intentionally omitted: U-Boot runs after the vendor
+ * bootloader and programs the few clocks it needs in mach-mmp/pxa988.c.
+ */
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/pinctrl/marvell,pxa988-pinfunc.h>
+
+/ {
+	compatible = "marvell,pxa988";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	interrupt-parent = <&gic>;
+
+	aliases {
+		serial0 = &uart1;
+		serial1 = &uart2;
+		serial2 = &uart3;
+		i2c0 = &twsi0;
+		i2c1 = &twsi1;
+		i2c2 = &twsi2;
+		usb0 = &usb;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		enable-method = "marvell,pxa988-smp";
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <0>;
+		};
+
+		cpu1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <1>;
+		};
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		bootph-all;
+
+		L2: cache-controller@d1dfb000 {
+			compatible = "arm,pl310-cache";
+			reg = <0xd1dfb000 0x1000>;
+			cache-unified;
+			cache-level = <2>;
+		};
+
+		gic: interrupt-controller@d1dff000 {
+			compatible = "arm,cortex-a9-gic";
+			#interrupt-cells = <3>;
+			#address-cells = <0>;
+			interrupt-controller;
+			reg = <0xd1dff000 0x1000>,
+			      <0xd1dfe100 0x0100>;
+		};
+
+		axi@d4200000 {
+			compatible = "simple-bus";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg = <0xd4200000 0x00200000>;
+			ranges;
+
+			/*
+			 * ChipIdea HDRC: U-Boot drives it through the generic
+			 * EHCI glue (capability registers at +0x100) and ci_udc.
+			 */
+			usb: usb@d4208100 {
+				compatible = "marvell,pxa988-usb", "generic-ehci";
+				reg = <0xd4208100 0xf00>;
+				interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
+				phys = <&usb_phy>;
+				phy-names = "usb";
+				dr_mode = "peripheral";
+				status = "disabled";
+			};
+
+			usb_phy: usb-phy@d4207000 {
+				compatible = "marvell,pxa988-usb-phy";
+				reg = <0xd4207000 0x200>,	/* PHY */
+				      <0xd428285c 0x4>;		/* APMU USB clock */
+				#phy-cells = <0>;
+				status = "disabled";
+			};
+
+			sdh1: mmc@d4280000 {
+				compatible = "mrvl,pxav3-mmc";
+				reg = <0xd4280000 0x120>;
+				interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
+				clock-frequency = <52000000>;
+				status = "disabled";
+			};
+
+			sdh2: mmc@d4280800 {
+				compatible = "mrvl,pxav3-mmc";
+				reg = <0xd4280800 0x120>;
+				interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
+				clock-frequency = <52000000>;
+				status = "disabled";
+			};
+
+			sdh3: mmc@d4281000 {
+				compatible = "mrvl,pxav3-mmc";
+				reg = <0xd4281000 0x120>;
+				interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
+				clock-frequency = <52000000>;
+				status = "disabled";
+			};
+
+			lcd: lcd-controller@d420b000 {
+				compatible = "marvell,pxa988-lcd";
+				reg = <0xd420b000 0x300>;
+				status = "disabled";
+			};
+		};
+
+		apb@d4000000 {
+			compatible = "simple-bus";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg = <0xd4000000 0x00200000>;
+			ranges;
+			bootph-all;
+
+			timer0: timer@d4014000 {
+				compatible = "mrvl,mmp-timer";
+				reg = <0xd4014000 0x100>;
+				interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
+				clock-frequency = <3250000>;
+				bootph-all;
+			};
+
+			uart1: serial@d4017000 {
+				compatible = "mrvl,mmp-uart", "intel,xscale-uart";
+				reg = <0xd4017000 0x1000>;
+				reg-shift = <2>;
+				reg-io-width = <4>;
+				interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+				clock-frequency = <14745600>;
+				status = "disabled";
+			};
+
+			uart2: serial@d4018000 {
+				compatible = "mrvl,mmp-uart", "intel,xscale-uart";
+				reg = <0xd4018000 0x1000>;
+				reg-shift = <2>;
+				reg-io-width = <4>;
+				interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
+				clock-frequency = <14745600>;
+				status = "disabled";
+			};
+
+			uart3: serial@d4036000 {
+				compatible = "mrvl,mmp-uart", "intel,xscale-uart";
+				reg = <0xd4036000 0x1000>;
+				reg-shift = <2>;
+				reg-io-width = <4>;
+				interrupts = <GIC_SPI 24 IRQ_TYPE_LEVEL_HIGH>;
+				clock-frequency = <14745600>;
+				status = "disabled";
+			};
+
+			twsi0: i2c@d4011000 {
+				compatible = "mrvl,mmp-twsi";
+				reg = <0xd4011000 0x1000>;
+				interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "disabled";
+			};
+
+			twsi1: i2c@d4010800 {
+				compatible = "mrvl,mmp-twsi";
+				reg = <0xd4010800 0x1000>;
+				interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "disabled";
+			};
+
+			twsi2: i2c@d4037000 {
+				compatible = "mrvl,mmp-twsi";
+				reg = <0xd4037000 0x1000>;
+				interrupts = <GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "disabled";
+			};
+
+			gpio: gpio@d4019000 {
+				compatible = "marvell,mmp-gpio";
+				reg = <0xd4019000 0x800>;
+				interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
+				gpio-controller;
+				#gpio-cells = <2>;
+				ngpios = <128>;
+			};
+
+			pmx: pinmux@d401e000 {
+				compatible = "marvell,pxa988-padconf", "pinctrl-single";
+				reg = <0xd401e000 0x0330>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				#pinctrl-cells = <1>;
+				pinctrl-single,register-width = <32>;
+				pinctrl-single,function-mask = <7>;
+			};
+
+			watchdog: watchdog@d4080000 {
+				compatible = "marvell,pxa988-wdt";
+				reg = <0xd4080000 0x100>;
+				status = "disabled";
+			};
+		};
+	};
+};

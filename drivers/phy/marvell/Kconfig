@@ -7,3 +7,10 @@ config MVEBU_COMPHY_SUPPORT
 	  This driver passes over the lanes
 	  and initialize the lane depends on the
 	  type and speed.
+
+config PHY_PXA988_USB
+	bool "Marvell PXA988/PXA986 USB 2.0 PHY"
+	depends on PHY && ARCH_MMP
+	help
+	  Support for the USB 2.0 UTMI PHY found on Marvell PXA988 and
+	  PXA986 SoCs, used together with the ChipIdea controller.

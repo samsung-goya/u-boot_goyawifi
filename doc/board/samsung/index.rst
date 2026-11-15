@@ -9,4 +9,5 @@ Samsung
    axy17lte
    e850-96
    exynos-mobile
+   goyawifi
    n1
