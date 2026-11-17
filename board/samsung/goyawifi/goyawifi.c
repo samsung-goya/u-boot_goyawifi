@@ -10,6 +10,7 @@
 #include <i2c.h>
 #include <init.h>
 #include <log.h>
+#include <mmc.h>
 #include <asm/io.h>
 #include <linux/bitops.h>
 #include <linux/delay.h>
@@ -87,9 +88,25 @@ int board_init(void)
 	return 0;
 }
 
+/* No serial from S-Boot: derive a stable one from the eMMC CID */
+static void goyawifi_set_serial_from_emmc(void)
+{
+	struct mmc *mmc = find_mmc_device(0);
+	char buf[17];
+
+	if (env_get("serial#") || !mmc || mmc_init(mmc))
+		return;
+
+	/* CID: manufacturer/OEM/name in [0..2], serial number in [2..3] */
+	snprintf(buf, sizeof(buf), "%08x%08x",
+		 mmc->cid[0] ^ mmc->cid[1], mmc->cid[2] ^ mmc->cid[3]);
+	env_set("serial#", buf);
+}
+
 int board_late_init(void)
 {
 	pxa988_late_init();
+	goyawifi_set_serial_from_emmc();
 
 	/*
 	 * Key combos checked once at boot:

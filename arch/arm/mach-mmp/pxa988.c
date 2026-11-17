@@ -18,6 +18,7 @@
 #include <linux/bitops.h>
 #include <linux/delay.h>
 #include <linux/string.h>
+#include <vsprintf.h>
 
 /* Main / application processor power management units */
 #define MPMU_BASE		0xd4050000
@@ -210,9 +211,34 @@ static void pxa988_save_prev_bl_atags(void)
 		if (t->hdr.tag == ATAG_NONE)
 			break;
 		if (t->hdr.tag == ATAG_CMDLINE) {
-			env_set("prevbl_cmdline", t->u.cmdline.cmdline);
-			if (strstr(t->u.cmdline.cmdline, "lpm_boot=1"))
+			const char *cl = t->u.cmdline.cmdline;
+			const char *sn = strstr(cl, "androidboot.serialno=");
+
+			env_set("prevbl_cmdline", cl);
+			if (strstr(cl, "lpm_boot=1"))
 				env_set("prevbl_lpm_boot", "1");
+
+			/* Used as USB iSerial by fastboot/UMS */
+			if (sn && !env_get("serial#")) {
+				char buf[33];
+				int i;
+
+				sn += strlen("androidboot.serialno=");
+				for (i = 0; i < sizeof(buf) - 1 && sn[i] &&
+				     sn[i] != ' '; i++)
+					buf[i] = sn[i];
+				buf[i] = '\0';
+				if (i)
+					env_set("serial#", buf);
+			}
+		}
+		if (t->hdr.tag == ATAG_SERIAL && !env_get("serial#") &&
+		    (t->u.serialnr.low || t->u.serialnr.high)) {
+			char buf[17];
+
+			snprintf(buf, sizeof(buf), "%08x%08x",
+				 t->u.serialnr.high, t->u.serialnr.low);
+			env_set("serial#", buf);
 		}
 		if (t->hdr.tag == ATAG_INITRD2)
 			env_set_hex("prevbl_initrd_start_addr", t->u.initrd.start);
